@@ -32,7 +32,7 @@ services:
     ports:
       - 3005:3003
     env_file:
-      - ./.envs/.productions/.postgres
+      - ./.envs/.productions/.metabase
     environment:
       MB_JETTY_PORT: 3003
     healthcheck:
