@@ -30,7 +30,7 @@ services:
     volumes:
       - /dev/urandom:/dev/random:ro
     ports:
-      - 3003:3003
+      - 3005:3003
     env_file:
       - ./.envs/.productions/.postgres
     environment:
