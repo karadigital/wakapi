@@ -35,8 +35,6 @@ services:
       - ./.envs/.productions/.postgres
     environment:
       MB_JETTY_PORT: 3003
-    networks:
-      - metanet1
     healthcheck:
       test: curl --fail -I http://localhost:3003/api/health || exit 1
       interval: 15s
