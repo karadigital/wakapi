@@ -19,8 +19,36 @@ services:
     restart: unless-stopped
     volumes:
       - wakapi-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     env_file:
       - ./.envs/.productions/.postgres
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    hostname: metabase
+    volumes:
+      - /dev/urandom:/dev/random:ro
+    ports:
+      - 3003:3003
+    env_file:
+      - ./.envs/.productions/.postgres
+    environment:
+      MB_JETTY_PORT: 3003
+    networks:
+      - metanet1
+    healthcheck:
+      test: curl --fail -I http://localhost:3003/api/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.metabase.rule=Host(`wakapi.karadigital.co`)"
+      - "traefik.http.routers.metabase.entrypoints=metabase"
+      - "traefik.http.routers.metabase.tls=true"
+      - "traefik.http.routers.metabase.tls.certresolver=myresolver"
+      - "traefik.http.services.metabase.loadbalancer.server.port=3003"
   traefik:
     image: traefik:v3.3
     depends_on:
@@ -31,6 +59,7 @@ services:
     ports:
       - '0.0.0.0:80:80'
       - '0.0.0.0:443:443'
+      - '0.0.0.0:3003:3003'
     labels:
       # Dashboard
       - "traefik.enable=true"
@@ -49,6 +78,7 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.metabase.address=:3003"
       # Redirect http to https
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
